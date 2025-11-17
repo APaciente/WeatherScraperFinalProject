@@ -1,26 +1,16 @@
 """
 Program: Weather Processing App - Part 1 Scraper
 Author: Arlo Paciente
-
 Description:
     Use Python's HTMLParser to scrape Winnipeg daily weather data
     (min, max, mean temperatures) from Environment Canada, starting
     from a URL encoded with today's year & month and walking backward
     month-by-month as far back as data is available.
-
     Output:
         {
             "YYYY-MM-DD": {"Max": float, "Min": float, "Mean": float},
             ...
         }
-
-Rubric alignment:
-  - scrape_weather.py module with a WeatherScraper class.
-  - Uses HTMLParser to parse the site HTML.
-  - Year & Month encoded directly in the URL.
-  - Code walks backward and stops when no more weather data is available
-    (no hard-coded last date, no dropdown scraping).
-  - All scraping code is contained inside the WeatherScraper class.
 """
 
 from __future__ import annotations
@@ -32,7 +22,7 @@ from urllib.parse import urlparse, parse_qs
 import urllib.request
 import urllib.error
 
-# ---------- helpers (non-scraping utilities) ----------
+# ---------- helpers ----------
 def _to_float(s: str) -> Optional[float]:
     """Convert string to float, treating special legend values / blanks as missing."""
     if not s:
@@ -52,7 +42,6 @@ def _prev_year_month(y: int, m: int) -> Tuple[int, int]:
 
 
 # ---------- main scraper class ----------
-
 class WeatherScraper:
     """
     Scrape Winnipeg daily weather data (max/min/mean temperature) from
