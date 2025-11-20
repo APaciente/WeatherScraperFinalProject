@@ -1,5 +1,5 @@
 """
-Program: Weather Processing App – Main
+Program: Weather Processing App - Main
 Author: Arlo Paciente
 Description:
     Main entry point for the Weather Processing App.

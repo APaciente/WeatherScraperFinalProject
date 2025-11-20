@@ -1,9 +1,6 @@
 """
-weather_processor.py
-
-Program: Weather Processing App – Part 4 User Interaction
+Program: Weather Processing App - Part 4 User Interaction
 Author: Arlo Paciente
-
 Description:
     WeatherProcessor is the main controller for the app.
     It:
@@ -12,6 +9,8 @@ Description:
         days between the latest DB date and today.
       - Lets the user enter a year range to generate a box plot.
       - Lets the user enter a year + month to generate a line plot.
+      - Lets the user view summary statistics.
+      - Lets the user export data to CSV.
       - Contains ALL user interaction / menus.
 """
 
@@ -19,6 +18,7 @@ from __future__ import annotations
 
 from datetime import date
 from typing import Optional
+import csv
 
 from scrape_weather import WeatherScraper
 from db_operations import DBOperations
@@ -30,6 +30,7 @@ class WeatherProcessor:
 
     Handles user interaction, scraping, database updates, and plotting.
     """
+
     def __init__(self, db_name: str = "weather.sqlite", location: str = "Winnipeg, MB"):
         self.db = DBOperations(db_name, default_location=location)
 
@@ -46,9 +47,11 @@ class WeatherProcessor:
             print("2. Update weather data up to today")
             print("3. Plot monthly boxplot (year range)")
             print("4. Plot daily mean line (specific month/year)")
-            print("5. Exit")
+            print("5. Show summary statistics")
+            print("6. Export data to CSV")
+            print("7. Exit")
 
-            choice = input("Enter your choice (1-5): ").strip()
+            choice = input("Enter your choice (1-7): ").strip()
 
             if choice == "1":
                 self.download_full_history()
@@ -59,10 +62,14 @@ class WeatherProcessor:
             elif choice == "4":
                 self.plot_line_menu()
             elif choice == "5":
+                self.show_summary_stats()
+            elif choice == "6":
+                self.export_to_csv()
+            elif choice == "7":
                 print("Goodbye!")
                 break
             else:
-                print("Invalid choice. Please enter a number 1–5.")
+                print("Invalid choice. Please enter a number 1–7.")
 
     # ---------- internal helpers ----------
 
@@ -125,7 +132,11 @@ class WeatherProcessor:
             return
 
         # How many months do we need to scrape to cover latest_date -> today?
-        months_needed = (today.year - latest_date.year) * 12 + (today.month - latest_date.month) + 1
+        months_needed = (
+            (today.year - latest_date.year) * 12
+            + (today.month - latest_date.month)
+            + 1
+        )
 
         print(
             f"Updating from {latest_date_str} to {today.isoformat()} "
@@ -176,7 +187,9 @@ class WeatherProcessor:
 
         try:
             year_text = input(f"Enter year (default {today.year}): ").strip()
-            month_text = input(f"Enter month 1–12 (default {today.month}): ").strip()
+            month_text = input(
+                f"Enter month 1–12 (default {today.month}): "
+            ).strip()
 
             year = int(year_text) if year_text else today.year
             month = int(month_text) if month_text else today.month
@@ -186,3 +199,42 @@ class WeatherProcessor:
             month = today.month
 
         plotter.plot_daily_mean_line(year, month)
+
+    def show_summary_stats(self) -> None:
+        """Print simple summary statistics for all data in the database."""
+        rows = self.db.fetch_data()
+        if not rows:
+            print("No data in the database yet.")
+            return
+
+        # avg_temp is index 3 in (sample_date, min_temp, max_temp, avg_temp)
+        avg_temps = [r[3] for r in rows]
+
+        min_temp = min(avg_temps)
+        max_temp = max(avg_temps)
+        avg_temp = sum(avg_temps) / len(avg_temps)
+
+        print("\nSummary statistics (all data):")
+        print(f"  Number of days: {len(avg_temps)}")
+        print(f"  Min mean temp: {min_temp:.1f} °C")
+        print(f"  Max mean temp: {max_temp:.1f} °C")
+        print(f"  Avg mean temp: {avg_temp:.1f} °C")
+
+    def export_to_csv(self) -> None:
+        """Export all weather rows from the database to a CSV file."""
+        rows = self.db.fetch_data()
+        if not rows:
+            print("No data in the database to export.")
+            return
+
+        filename = "weather_export.csv"
+        try:
+            with open(filename, "w", newline="", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["sample_date", "min_temp", "max_temp", "avg_temp"])
+                writer.writerows(rows)
+        except OSError as exc:
+            print(f"Error writing to {filename}: {exc}")
+            return
+
+        print(f"Export complete. Saved to {filename}.")
