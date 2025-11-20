@@ -21,6 +21,9 @@ from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse, parse_qs
 import urllib.request
 import urllib.error
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ---------- helpers ----------
 def _to_float(s: str) -> Optional[float]:
@@ -141,10 +144,10 @@ class WeatherScraper:
             if not digits:
                 return
             try:
-                day = int(digits)
+                day_value = int(digits)
             except ValueError:
                 return
-            if not (1 <= day <= 31):
+            if day_value < 1 or day_value > 31:
                 return
 
             max_v = _to_float(cells[1])
@@ -155,7 +158,7 @@ class WeatherScraper:
             if None in (max_v, min_v, mean_v):
                 return
 
-            iso = f"{self.year:04d}-{self.month:02d}-{day:02d}"
+            iso = f"{self.year:04d}-{self.month:02d}-{day_value:02d}"
             self.weather[iso] = {"Max": max_v, "Min": min_v, "Mean": mean_v}
 
     # ----- WeatherScraper methods -----
@@ -188,9 +191,8 @@ class WeatherScraper:
             month = int(qs.get("Month", [date.today().month])[0])
             if 1 <= month <= 12:
                 return year, month
-        except Exception:
-            # Any parsing error falls through to default
-            pass
+        except (ValueError, TypeError):
+            logger.exception("Error parsing year/month from URL: %s", url)
 
         today = date.today()
         return today.year, today.month
@@ -222,6 +224,7 @@ class WeatherScraper:
         except (urllib.error.URLError, urllib.error.HTTPError) as exc:
             if self.debug:
                 print("  Network/HTTP error:", exc)
+            logger.exception("Network/HTTP error while fetching %s", url)
             return {}
 
         parser = self._MonthWeatherParser(year, month)

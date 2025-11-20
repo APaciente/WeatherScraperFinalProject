@@ -15,6 +15,12 @@ from typing import Optional
 
 
 class DBCM:
+    """Context manager for SQLite connections.
+
+    Opens a connection to the given database file, yields a cursor,
+    and then commits on success or rolls back on error when exiting
+    the with-block.
+    """
     def __init__(self, filename: str):
         self.filename = filename
         self.conn: Optional[sqlite3.Connection] = None

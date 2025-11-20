@@ -1,29 +1,34 @@
-# main_app.py
-from scrape_weather import WeatherScraper
-from db_operations import DBOperations
-from datetime import date
+"""
+Program: Weather Processing App – Main
+Author: Arlo Paciente
+Description:
+    Main entry point for the Weather Processing App.
+    Creates a WeatherProcessor instance and runs the full workflow.
+"""
 
-def main():
-    # 1. Scrape
-    today = date.today()
-    start_url = WeatherScraper._BASE_URL.format(
-        year=today.year,
-        month=today.month,
-        end_year=today.year,
-    )
-    scraper = WeatherScraper(start_url, debug=True)
-    weather_dict = scraper.scrape(max_months=12)
+import logging
+from weather_processor import WeatherProcessor
 
-    # 2. DB operations
-    db = DBOperations("weather.sqlite", default_location="Winnipeg, MB")
-    db.initialize_db()
-    db.purge_data()
-    db.save_data(weather_dict)
+# Minimal logging setup for the whole app
+logging.basicConfig(
+    filename="weather_app.log",
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
-    # 3. Fetch for plotting
-    rows = db.fetch_data()
-    print(f"Total rows in DB: {len(rows)}")
-    print("First 5 rows:", rows[:5])
+
+def main() -> None:
+    """Entry point for the Weather Processing App."""
+    logger.info("Weather app starting.")
+    try:
+        app = WeatherProcessor()
+        app.run()
+        logger.info("Weather app exited normally.")
+    except Exception:  # pylint: disable=broad-exception-caught
+        logger.exception("Unhandled error in main()")
+        print("A fatal error occurred. Check weather_app.log for details.")
+
 
 if __name__ == "__main__":
     main()

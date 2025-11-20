@@ -1,9 +1,6 @@
 """
-db_operations.py
-
-Program: Weather Processing App – Part 2 Database
+Program: Weather Processing App - Part 2 Database
 Author: Arlo Paciente
-
 Description:
     Define a DBOperations class that uses sqlite3 (via the DBCM context
     manager) to store weather data in an SQLite database.
@@ -34,6 +31,9 @@ from dbcm import DBCM
 
 
 class DBOperations:
+    """High-level helper for creating, clearing, saving, and fetching
+    weather data in an SQLite database.
+    """
     def __init__(self, db_name: str, default_location: str = "Winnipeg, MB"):
         """
         db_name:
@@ -153,10 +153,10 @@ class DBOperations:
                 """,
                 (loc,),
             )
-            rows = cur.fetchall()
+            result_rows = cur.fetchall()
 
         # Convert list of rows to tuple of rows (as per assignment)
-        return tuple(rows)
+        return tuple(result_rows)
 
 
 # ---------- simple manual test ----------
