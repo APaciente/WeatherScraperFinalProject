@@ -1,13 +1,15 @@
 """
-dbcm.py
-Simple context manager class (DBCM) for SQLite connections.
+Program: Weather Processing App - Part 2 Database
+Author: Arlo Paciente
+Description:
+    Simple context manager class (DBCM) for SQLite connections.
 
-Usage:
-    from dbcm import DBCM
+    Usage:
+        from dbcm import DBCM
 
-    with DBCM("weather.sqlite") as cur:
-        cur.execute("SELECT 1;")
-        rows = cur.fetchall()
+        with DBCM("weather.sqlite") as cur:
+            cur.execute("SELECT 1;")
+            rows = cur.fetchall()
 """
 
 import sqlite3

@@ -98,7 +98,7 @@ class WeatherAppGUI:
 
         # Only global actions in the sidebar
         sidebar_buttons = [
-            ("⬇  Full Download (Reset DB)", self.on_full_download),
+            ("⬇  Full Download (Reset)", self.on_full_download),
             ("🔄  Update Data", self.on_update),
             ("📄  Summary Stats", self.on_summary),
             ("💾  Export to CSV", self.on_export),
